@@ -188,7 +188,7 @@
     WeakPtr<int> wp{sp};
     ```
     
-- 要求实现移动构造函数与拷贝构造函数，注意在拷贝构造中可以通过 $\mathrm{shared_ptr}$ 构造 $\mathrm{weak_ptr}$
+- 要求实现移动构造函数与拷贝构造函数，注意在拷贝构造中可以通过 `shared_ptr` 构造 `weak_ptr`
     
      ```
      WeakPtr<int> wp1{sp};
@@ -349,6 +349,7 @@
 感谢 2025 级黄捷航修正了 `README.md`。
 
 如有问题请联系本项目的发布者 `PhantomPhoenix`, 他的邮箱地址是: `logic_1729@sjtu.edu.cn`；负责人 `cyl06`，他的邮箱地址是: `ocwzazure@sjtu.edu.cn`。
+
 
 
 
