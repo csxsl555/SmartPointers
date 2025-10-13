@@ -51,17 +51,17 @@
      ```
     
 - 要求重载类型转换符 `bool()` 来判断指针是否为空，非空返回 true,空返回 false;
-      ```
+     ```
       UniquePtr<std::string> ptr{new std::string{"hello"}};
       std::cout << bool(ptr) << std::endl; // output: true
-      ```
+     ```
     
 - 要求重载运算符 `operator=`，实现 `unique_ptr` 间的移动赋值并禁止拷贝赋值
      ```
      UniquePtr<int> ptr1{new int{10}};
      UniquePtr<int> ptr2{new int{11}};
      ptr2 = ptr1;// 编译错误
-     ```
+    ```
     
 - 要求实现 `get()` 函数用以返回存储在类中的原始指针
       ```
@@ -349,6 +349,7 @@
 感谢 2025 级黄捷航修正了 `README.md`。
 
 如有问题请联系本项目的发布者 `PhantomPhoenix`, 他的邮箱地址是: `logic_1729@sjtu.edu.cn`；负责人 `cyl06`，他的邮箱地址是: `ocwzazure@sjtu.edu.cn`。
+
 
 
 
