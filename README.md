@@ -348,7 +348,8 @@
 
 感谢 2025 级黄捷航修正了 `README.md`。
 
-如有问题请联系本项目的发布者 `PhantomPhoenix`, 他的邮箱地址是: `logic_1729@sjtu.edu.cn`
+如有问题请联系本项目的发布者 `PhantomPhoenix`, 他的邮箱地址是: `logic_1729@sjtu.edu.cn`；负责人 `cyl06`，他的邮箱地址是: `ocwzazure@sjtu.edu.cn`。
+
 
 
 
