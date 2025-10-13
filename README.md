@@ -38,11 +38,10 @@
 - 要求拥有析构函数 `~UniquePtr()` 删除动态指针并将其置为 `nullptr`(思考：为什么要置空)
     
 - 要求重载解引用运算符 `operator*`，实现与普通指针相同的功能
-    
-     ```
+    ```
      UniquePtr<int> ptr{new int{10}};
      std::cout << *ptr << std::endl; // output: 10
-     ```
+    ```
     
 - 要求重载间接引用运算符 `operator->`，实现与普通指针相同的功能
      ```
@@ -50,7 +49,7 @@
       std::cout << ptr->length() << std::endl; // output: 5
      ```
     
-- 要求重载类型转换符 `bool()` 来判断指针是否为空，非空返回 true,空返回 false;
+- 要求重载类型转换符 `bool()` 来判断指针是否为空，非空返回 true,空返回 false
      ```
       UniquePtr<std::string> ptr{new std::string{"hello"}};
       std::cout << bool(ptr) << std::endl; // output: true
@@ -61,16 +60,17 @@
      UniquePtr<int> ptr1{new int{10}};
      UniquePtr<int> ptr2{new int{11}};
      ptr2 = ptr1;// 编译错误
-    ```
+     ```
     
 - 要求实现 `get()` 函数用以返回存储在类中的原始指针
-    ```
+
+      ```
       UniquePtr<int> ptr{new int{10}};
       std::cout << ptr.get() << std::endl; // output: raw pointer stored in the class
-    ```
+      ```
 - 要求实现 `reset()` 函数，包括实现以下两种参数形式：
-      1.    `void reset();` 删除原有指针并分配 `nullptr` 给它；
-     1.    `void reset(T* p)` 删除原有指针并分配 `p` 给它
+     1.    `void reset();` 删除原有指针并分配 `nullptr` 给它；
+     2.    `void reset(T* p)` 删除原有指针并分配 `p` 给它
  
      ```
      UniquePtr<std::string> ptr{new std::string{"hello"}};
@@ -141,19 +141,19 @@
       ptr2 = ptr1;
      ```
 - 要求重载类型转换符 `bool()` 来判断指针是否为空，非空返回 true,空返回 false;
-      ```
+     ```
       SharedPtr<std::string> ptr{new std::string{"hello"}};
       std::cout << bool(ptr) << std::endl; // output: true
-      ```
+     ```
     
 - 要求实现 `get()` 函数用以返回存储在类中的原始指针
-      ```
+     ```
        SharedPtr<int> ptr{new int{10}};
        std::cout << ptr.get() << std::endl; // output: raw pointer of the class
-      ```
+     ```
 - 要求实现 `reset()` 函数，包括实现以下两种参数形式：
-      1.    `void reset();` 删除原有指针并分配 `nullptr` 给它；
-     1.    `void reset(T* p)` 删除原有指针并分配 `p` 给它
+     1.    `void reset();` 删除原有指针并分配 `nullptr` 给它；
+     2.    `void reset(T* p)` 删除原有指针并分配 `p` 给它
  
      ```
       SharedPtr<std::string> ptr{new std::string{"hello"}};
@@ -208,29 +208,29 @@
      wp2 = std::move(wp1);//编译成功
      ```
 - 要求重载类型转换符 `bool()` 来判断指针是否为空，非空返回 true,空返回 false;
-      ```
+     ```
       WeakPtr<int> wp;
      SharedPtr<int> sp{new int{10}};
      wp = sp;
       std::cout << bool(wp) << std::endl; // output: true
-      ```    
+     ```    
 
 - 要求实现 `lock()` 函数用以转换 `weak_ptr` 为 `shared_ptr`。如果对象已被删除，则返回一个空的 `shared_ptr`。
-      ```
+     ```
       WeakPtr<int> wp{sp};
       SharedPtr<int> sp2 = wp.lock();
       if(sp2) {
           std::cout << *sp2 << std::endl;  // Use the object safely
       }
-      ```
+     ```
 - 要求实现 `expired()` 函数用以检查 `weak_ptr` 所指向的对象是否已被删除，返回 `true` 表示被删除，返回 `false` 表示没有被删除
-      ```
+     ```
       WeakPtr<int> wp{sp};
       if(!wp.expired()) {
           SharedPtr<int> sp2 = wp.lock();
       // Use sp2...
       }
-      ```
+     ```
 - 要求实现 `reset()` 函数，删除原有指针并分配 `nullptr` 给它；
      ```    
      WeakPtr<int> wp{sp};
@@ -256,7 +256,7 @@
     
 1. 在完成本次大作业时，请对三个智能指针全部有所了解之后再开始设计，以避免不必要的局部修改或整体重构 (尤其是 `shared_ptr` 与 `weak_ptr`)
    
-2. 注意函数实现中的细节，譬如 `const`，`noexpect`,`explicit` 等，这些都需要自己补充，这些都有可能成为 `Code Review` 中考察的对象。
+2. 注意函数实现中的细节，这些在下发文件里没有给出，譬如 `const`，`noexpect`,`explicit` 等（这些请自行查询资料了解），请将这些关键词添加到适当函数处使智能指针可以正常运行，并且注意这些都有可能成为 `Code Review` 中考察的对象。
     
 # Bonus
     
@@ -314,7 +314,7 @@
 
 ### 截止时间
 
-第六周周日（10/26）23:59:59
+第五周周日（10/26）24:00
 
 ### 编译与运行
 
@@ -348,7 +348,11 @@
 
 感谢 2025 级黄捷航修正了 `README.md`。
 
-如有问题请联系本项目的发布者 `PhantomPhoenix`, 他的邮箱地址是: `logic_1729@sjtu.edu.cn`；负责人 `cyl06`，他的邮箱地址是: `ocwzazure@sjtu.edu.cn`。
+如有问题请联系本项目的发布者 `PhantomPhoenix`, 他的邮箱地址是: `logic_1729@sjtu.edu.cn`
+
+
+
+
 
 
 
