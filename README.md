@@ -210,8 +210,8 @@
 - 要求重载类型转换符 `bool()` 来判断指针是否为空，非空返回 true,空返回 false;
      ```
       WeakPtr<int> wp;
-     SharedPtr<int> sp{new int{10}};
-     wp = sp;
+      SharedPtr<int> sp{new int{10}};
+      wp = sp;
       std::cout << bool(wp) << std::endl; // output: true
      ```    
 
@@ -349,6 +349,7 @@
 感谢 2025 级黄捷航修正了 `README.md`。
 
 如有问题请联系本项目的发布者 `PhantomPhoenix`, 他的邮箱地址是: `logic_1729@sjtu.edu.cn`
+
 
 
 
