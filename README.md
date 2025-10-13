@@ -64,10 +64,10 @@
     ```
     
 - 要求实现 `get()` 函数用以返回存储在类中的原始指针
-      ```
+    ```
       UniquePtr<int> ptr{new int{10}};
       std::cout << ptr.get() << std::endl; // output: raw pointer stored in the class
-      ```
+    ```
 - 要求实现 `reset()` 函数，包括实现以下两种参数形式：
       1.    `void reset();` 删除原有指针并分配 `nullptr` 给它；
      1.    `void reset(T* p)` 删除原有指针并分配 `p` 给它
@@ -349,6 +349,7 @@
 感谢 2025 级黄捷航修正了 `README.md`。
 
 如有问题请联系本项目的发布者 `PhantomPhoenix`, 他的邮箱地址是: `logic_1729@sjtu.edu.cn`；负责人 `cyl06`，他的邮箱地址是: `ocwzazure@sjtu.edu.cn`。
+
 
 
 
