@@ -350,21 +350,286 @@
 
 如有问题请联系本项目的发布者 `PhantomPhoenix`, 他的邮箱地址是: `logic_1729@sjtu.edu.cn`；负责人 `cyl06`，他的邮箱地址是: `ocwzazure@sjtu.edu.cn`。
 
+## Notes
+
+explicit noexcept const 的用法：
+
+这三个关键字在C++中用途明确且场景具体，下面逐个掰开揉碎了讲，附代码例子，保证你看完就懂怎么用。
 
 
+### 一、`explicit`：禁止隐式类型转换，只允许显式构造  
+**核心作用**：阻止编译器对构造函数或转换函数进行「隐式类型转换」，避免意外的类型转换导致逻辑错误。  
 
 
+#### 1. 用于单参数构造函数（最常见场景）  
+如果一个类的构造函数只有一个参数（或除第一个参数外其余参数都有默认值），编译器会默认允许「隐式转换」：用该参数类型直接初始化对象。而`explicit`会禁用这种隐式转换，强制要求显式构造。  
+
+**反例（不加`explicit`的风险）**：  
+```cpp
+class MyInt {
+public:
+    // 单参数构造函数，未加explicit
+    MyInt(int value) : m_value(value) {} 
+    int get() const { return m_value; }
+private:
+    int m_value;
+};
+
+void printMyInt(MyInt num) {  // 函数参数为MyInt类型
+    cout << num.get() << endl;
+}
+
+int main() {
+    // 隐式转换：编译器自动将int转为MyInt对象
+    printMyInt(10);  // 等价于 printMyInt(MyInt(10))，但这可能是开发者没预料到的
+    return 0;
+}
+```  
+这里`printMyInt(10)`能编译通过，是因为编译器自动用`10`隐式构造了一个`MyInt`对象。如果开发者本意是`printMyInt`只接受显式创建的`MyInt`，这种隐式转换就可能导致逻辑错误。  
 
 
+**加`explicit`后的正确用法**：  
+```cpp
+class MyInt {
+public:
+    explicit MyInt(int value) : m_value(value) {}  // 加explicit
+    int get() const { return m_value; }
+private:
+    int m_value;
+};
+
+void printMyInt(MyInt num) {}
+
+int main() {
+    printMyInt(10);  // 编译报错！禁止隐式转换
+    printMyInt(MyInt(10));  // 正确：显式构造，允许
+    printMyInt({10});  // 正确：C++11后的列表初始化也算显式
+    return 0;
+}
+```  
+加`explicit`后，必须显式写出构造过程，避免了意外的隐式转换。  
 
 
+#### 2. 用于多参数构造函数（C++11后）  
+如果多参数构造函数中，除第一个参数外其余参数有默认值，也可能被隐式转换。`explicit`同样可以禁用这种转换：  
+```cpp
+class Point {
+public:
+    // 多参数，但y有默认值，本质可被当作"单参数构造函数"使用
+    explicit Point(int x, int y = 0) : m_x(x), m_y(y) {}  // 加explicit
+private:
+    int m_x, m_y;
+};
+
+int main() {
+    Point p = 10;  // 编译报错！禁止隐式转换（原本会被转为Point(10, 0)）
+    Point p2(10);  // 正确：显式构造
+    return 0;
+}
+```  
 
 
+#### 3. 用于转换函数（C++11后）  
+C++允许类定义「转换函数」（operator 目标类型()），用于将类对象隐式转为其他类型。`explicit`也可修饰转换函数，禁止隐式转换：  
+```cpp
+class MyInt {
+public:
+    MyInt(int value) : m_value(value) {}
+    // 转换函数：将MyInt转为int，加explicit禁止隐式转换
+    explicit operator int() const { return m_value; } 
+private:
+    int m_value;
+};
+
+int main() {
+    MyInt num(10);
+    int x = num;  // 编译报错！禁止隐式转换（MyInt→int）
+    int y = static_cast<int>(num);  // 正确：显式转换
+    return 0;
+}
+```  
 
 
+**总结`explicit`用法**：  
+- 只修饰「单参数构造函数」「带默认值的多参数构造函数」「转换函数」。  
+- 目的：禁止编译器自动进行的隐式类型转换，强制显式构造/转换，减少意外。  
 
 
+### 二、`noexcept`：声明函数不会抛出异常  
+**核心作用**：告诉编译器“这个函数绝对不会抛出异常”，帮助编译器优化代码，并明确函数的异常安全承诺。  
 
 
+#### 1. 基本用法：`noexcept`与`noexcept(true/false)`  
+- `noexcept` 等价于 `noexcept(true)`：声明函数不会抛异常。  
+- `noexcept(表达式)`：表达式为`true`则不抛异常，`false`则可能抛（等价于不写`noexcept`）。  
+
+```cpp
+// 声明"不会抛异常"
+void func1() noexcept {
+    // 如果这里抛出异常（如throw 1;），程序会直接调用std::terminate()终止，不会走异常处理
+}
+
+// 声明"可能抛异常"（等价于不写noexcept）
+void func2() noexcept(false) {
+    throw 1;  // 允许抛出，可被try-catch捕获
+}
+
+// 条件性noexcept：根据模板参数T的移动构造是否noexcept来决定
+template <typename T>
+void move_obj(T& a, T& b) noexcept(noexcept(T(std::move(a)))) {
+    // ...
+}
+```  
 
 
+#### 2. 为什么要用`noexcept`？  
+- **编译器优化**：知道函数不抛异常后，编译器可以省略异常处理相关的代码（如栈展开准备），生成更高效的机器码。  
+- **影响标准库行为**：标准库中很多函数（如容器的`push_back`、`resize`）会根据元素的「移动构造函数是否`noexcept`」决定行为。例如：  
+  - 如果元素的移动构造是`noexcept`，容器扩容时会用「移动」（高效）；  
+  - 如果不是，会用「复制」（低效但安全，避免移动中抛异常导致数据丢失）。  
+
+**示例：移动构造函数加`noexcept`的意义**  
+```cpp
+class MyData {
+public:
+    MyData() = default;
+    // 移动构造函数声明为noexcept，告诉容器"移动时不会抛异常"
+    MyData(MyData&&) noexcept { 
+        // 实际移动资源（如堆内存）
+    }
+    // 如果不加noexcept，容器可能会用复制而非移动
+};
+
+int main() {
+    vector<MyData> vec;
+    vec.reserve(100);  // 扩容时，因MyData移动构造noexcept，会用移动而非复制
+    return 0;
+}
+```  
+
+
+#### 3. 哪些函数默认是`noexcept`？  
+- 析构函数：默认`noexcept(true)`（除非用户手动声明为`noexcept(false)`）。  
+- 编译器生成的特殊成员函数（默认构造、复制/移动构造、赋值）：如果其内部调用的所有函数都是`noexcept`，则默认`noexcept`。  
+
+
+**总结`noexcept`用法**：  
+- 用于明确函数“不抛异常”的承诺（一旦抛了就会终止程序）。  
+- 优先给「移动操作、析构函数、简单的工具函数」加`noexcept`，帮助编译器优化和标准库高效调用。  
+
+
+### 三、`const`：常量修饰符，保证“只读”性  
+**核心作用**：修饰变量、指针、函数参数、成员函数等，表明其“只读”属性，防止意外修改，增强代码安全性和可读性。  
+
+
+#### 1. 修饰普通变量：值不可修改  
+```cpp
+const int a = 10;  // a是常量，初始化后不能改
+a = 20;  // 编译报错！
+
+// 注意：必须初始化
+const int b;  // 编译报错！未初始化
+```  
+
+
+#### 2. 修饰指针：区分“指针本身不可改”和“指向的内容不可改”  
+指针有两个部分：「指针变量本身（存地址）」和「指向的内存（存数据）」。`const`的位置决定了修饰哪部分：  
+
+- **`const int* p`**：指向“常量int”的指针（指向的内容不可改，指针本身可改）。  
+  ```cpp
+  int x = 10, y = 20;
+  const int* p = &x;  // p指向x，x的值不可通过p修改
+  *p = 30;  // 编译报错！不能改指向的内容
+  p = &y;   // 允许：指针本身可以改指向
+  ```  
+
+- **`int* const p`**：“常量指针”（指针本身不可改，指向的内容可改）。  
+  ```cpp
+  int x = 10, y = 20;
+  int* const p = &x;  // p的指向不能改
+  p = &y;  // 编译报错！指针本身不可改
+  *p = 30; // 允许：指向的内容可以改（x变成30）
+  ```  
+
+- **`const int* const p`**：指向“常量int”的“常量指针”（两者都不可改）。  
+  ```cpp
+  const int* const p = &x;
+  p = &y;   // 错：指针本身不可改
+  *p = 30;  // 错：指向的内容不可改
+  ```  
+
+
+#### 3. 修饰函数参数：保证参数在函数内不被修改  
+常用于避免参数被意外修改，尤其是传递大对象时（配合引用更高效）：  
+
+```cpp
+// 修饰普通参数：值传递，本身修改不影响外部，加const意义不大（但可防止函数内误改）
+void print1(const int num) {
+    num = 20;  // 编译报错！防止函数内修改
+}
+
+// 修饰引用参数：避免修改原对象，同时避免复制（高效）
+void print2(const string& str) {  // str是原字符串的引用，且不可改
+    str += "abc";  // 编译报错！不能修改原字符串
+    cout << str << endl;
+}
+```  
+
+
+#### 4. 修饰类的成员函数：保证函数不修改类的成员变量  
+在成员函数后加`const`，表明该函数是“只读函数”：  
+- 不能修改类的非静态成员变量（除非变量被`mutable`修饰）。  
+- 不能调用类的非`const`成员函数（防止间接修改成员）。  
+- `const`对象只能调用`const`成员函数（非`const`对象两者都能调用）。  
+
+**示例**：  
+```cpp
+class Student {
+private:
+    string m_name;
+    mutable int m_age;  // mutable变量：即使在const函数中也能修改
+public:
+    Student(string name, int age) : m_name(name), m_age(age) {}
+
+    // const成员函数：只读，不修改成员
+    string getName() const {
+        // m_name = "abc";  // 编译报错！不能修改非mutable成员
+        return m_name;
+    }
+
+    // const成员函数：可以修改mutable成员
+    void increaseAge() const {
+        m_age++;  // 允许：m_age是mutable
+    }
+
+    // 非const成员函数：可以修改成员
+    void setName(string name) {
+        m_name = name;
+    }
+};
+
+int main() {
+    const Student s1("张三", 18);  // const对象
+    s1.getName();       // 允许：const对象调用const成员函数
+    s1.increaseAge();   // 允许：const对象调用const成员函数（修改mutable）
+    s1.setName("李四"); // 编译报错！const对象不能调用非const成员函数
+
+    Student s2("李四", 20);  // 非const对象
+    s2.getName();       // 允许：非const对象可调用const函数
+    s2.setName("王五"); // 允许：非const对象可调用非const函数
+    return 0;
+}
+```  
+
+
+**总结`const`用法**：  
+- 修饰变量：值不可改，必须初始化。  
+- 修饰指针：根据位置区分“指向内容不可改”还是“指针本身不可改”。  
+- 修饰函数参数：防止函数内修改参数（尤其引用传递时）。  
+- 修饰成员函数：保证不修改成员变量（除`mutable`），`const`对象只能调用。  
+
+
+### 最后一句话总结  
+- `explicit`：别瞎转换，我要显式构造！  
+- `noexcept`：我保证不抛异常，编译器放心优化！  
+- `const`：这玩意儿不能改，谁改谁报错！
